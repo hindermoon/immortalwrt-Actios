@@ -1,8 +1,6 @@
 #!/bin/bash
 # DIY脚本
-# https://github.com/P3TERX/Actions-OpenWrt
 # 文件名: diy-part2.sh
-# 功能说明: OpenWrt DIY脚本第2部分（更新feeds之后）
 
 # 修改默认主题为 argon（路径不存在时跳过，不中断编译）
 sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile 2>/dev/null || true
@@ -55,7 +53,12 @@ if target in content and "sim-ctrl-default-state" not in content:
 done
 
 # ==========================================
-# 2. 修复依赖缺失导致的编译报错 (libffi / glib2)
+# 2. 彻底解决 glib2 缺失 libffi.so.8 依赖的问题
 # ==========================================
-echo "CONFIG_PACKAGE_libffi=y" >> .config
-echo "CONFIG_PACKAGE_glib2=y" >> .config
+echo "正在强制将 libffi 写入编译配置..."
+{
+    echo "CONFIG_PACKAGE_libffi=y"
+    echo "CONFIG_PACKAGE_libffi_selinux=n"
+    echo "CONFIG_LIBFFI_BUILD_TESTS=n"
+    echo "CONFIG_PACKAGE_glib2=y"
+} >> .config
